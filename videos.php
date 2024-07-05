@@ -9,6 +9,29 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $videos = getAllVideos($conn);
+
+// Check if a search query is submitted
+$search_query = isset($_GET['search_query']) ? $_GET['search_query'] : '';
+
+if (!empty($search_query)) {
+    // Perform search
+    $videos = searchVideos($conn, $search_query);
+}
+
+// Function to search videos based on title or other criteria
+function searchVideos($conn, $search_query) {
+    $sql = "SELECT * FROM videos WHERE title LIKE ?";
+    $stmt = $conn->prepare($sql);
+    $search_param = "%$search_query%";
+    $stmt->bind_param("s", $search_param);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $videos = [];
+    while ($row = $result->fetch_assoc()) {
+        $videos[] = $row;
+    }
+    return $videos;
+}
 ?>
 
 <!DOCTYPE html>
